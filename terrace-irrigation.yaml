@@ -1,0 +1,73 @@
+esphome:
+  name: terrace-irrigation
+  friendly_name: terrace-irrigation
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "i5aNSQQcuosCnfgVKai7ONEyZfs6ZImcDfl7t+N9YMw="
+
+ota:
+  password: "ad5340e8b94b022a8b1f6a084d3da96e"
+  platform: esphome
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Terrace-Irrigation"
+    password: "mpFkaF1bEEde"
+
+captive_portal:
+
+    
+switch:
+  - platform: gpio
+    name: "Pond Irrigation"
+    id: pond_irrigation
+    pin: 13
+
+  - platform: gpio
+    name: "Relay 2"
+    id: relay_2
+    pin: 12
+
+  - platform: gpio
+    name: "Relay 3"
+    id: relay_3
+    pin: 14
+
+  - platform: gpio
+    name: "Upper Terrace Irrigation"
+    id: upper_terrace_irrigation
+    pin: 27
+
+  - platform: gpio
+    name: "Terrace Hose"
+    id: terrace_hose
+    pin: 26
+
+  - platform: gpio
+    name: "Terrace Irrigation"
+    id: terrace_irrigation
+    pin: 25
+
+  - platform: gpio
+    name: "Relay 7"
+    id: relay_7
+    pin: 33
+
+  - platform: gpio
+    name: "Lower Terrace Irrigation"
+    id: lower_terrace_irrigation
+    pin: 32

@@ -1,0 +1,129 @@
+esphome:
+  name: radar4
+  friendly_name: radar4
+
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "EUncSctfFR/14pn9+1Q0iUYuAuOgQeYmnKBG+xG/3sw="
+
+ota:
+  - platform: esphome
+    password: "d31ff81e716c12d25943ea60f1ce5e17"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Radar4 Fallback Hotspot"
+    password: "rwzx9kTuimnV"
+
+captive_portal:
+
+uart:
+  rx_pin: GPIO03
+  tx_pin: GPIO04
+  id: ld2410_uart
+  baud_rate: 115200
+  parity: NONE
+  stop_bits: 1
+
+web_server:
+  port: 80
+
+ld2420:
+
+text_sensor:
+  - platform: ld2420
+    fw_version:
+      name: LD2420 Firmware
+      id: ld2420_firmware
+
+sensor:
+  - platform: ld2420
+    moving_distance:
+      name : Moving Distance
+      id: moving_distance
+
+  - platform: internal_temperature
+    name: "Internal Temperature"
+
+binary_sensor:
+  - platform: ld2420
+    has_target:
+      name: Presence
+      id: presence_binary_sensor
+      on_state:
+        then:
+          - if:
+              condition: 
+                binary_sensor.is_on: presence_binary_sensor
+              then:
+                - output.turn_on: gpio_10
+              else:
+                - output.turn_off: gpio_10
+      # - if:
+      #       condition:
+      #         binary_sensor.is_on: presence_binary_sensor
+      #       then:
+      #         - output.turn_on: motion_led
+      #         - delay: 500ms
+      #         - output.turn_off: motion_led
+      #         - delay: 500ms
+      #   else:
+      #     - output.turn_off: motion_led
+
+select:
+  - platform: ld2420
+    operating_mode:
+      name: Operating Mode
+
+number:
+  - platform: ld2420
+    presence_timeout:
+      name: Detection Presence Timeout
+    min_gate_distance:
+      name: Detection Gate Minimum
+    max_gate_distance:
+      name: Detection Gate Maximum
+    # See "Number" section below for detail
+    gate_select:
+      name: Select Gate to Set
+    still_threshold:
+      name: Set Still Threshold Value
+    move_threshold:
+      name: Set Move Threshold Value
+
+button:
+  - platform: ld2420
+    apply_config:
+      name: Apply Config
+    factory_reset:
+      name: Factory Reset
+    restart_module:
+      name: Restart Module
+      id: restart_module
+    revert_config:
+      name: Undo Edits
+
+  - platform: restart
+    name: "Radar Restart"
+    id: radarrestart
+
+output:
+  - platform: ledc
+    pin: GPIO10
+    id: gpio_10
+
+status_led:
+  pin: GPIO7

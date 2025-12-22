@@ -1,0 +1,17 @@
+substitutions:
+  name: 3d_printer_switch
+  friendly_name: 3d_printer_switch
+packages:
+  Athom_Technology.Smart_Plug_V2: github://athom-tech/athom-configs/athom-smart-plug-v2.yaml
+esphome:
+  name: ${name}
+  name_add_mac_suffix: false
+  friendly_name: ${friendly_name}
+api:
+  encryption:
+    key: 9qt/7cE+hpNZxOBJa+8Q9Z8CqzQNX2Zgr8iS/YRV1Vg=
+
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password

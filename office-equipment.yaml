@@ -1,0 +1,17 @@
+substitutions:
+  name: athom-smart-plug-de05f8
+  friendly_name: office_equipment
+packages:
+  Athom_Technology.Smart_Plug_V2: github://athom-tech/athom-configs/athom-smart-plug-v2.yaml
+esphome:
+  name: ${name}
+  name_add_mac_suffix: false
+  friendly_name: ${friendly_name}
+api:
+  encryption:
+    key: W3So0j3ffZuQAfQBfQMAhKV+XZK4E9xqpO3B06EEGs4=
+
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password

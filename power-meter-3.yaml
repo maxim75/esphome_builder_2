@@ -1,0 +1,331 @@
+esphome:
+  name: power-meter-3
+  friendly_name: power-meter-3
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "kqZI16T6GnV4NMSiVuGnXnTWyb6eKi3aoNRtW1Slljo="
+
+ota:
+  password: "de248e87ed21072c7e45fbcfe687c370"
+  platform: esphome
+  
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Power-Meter-3 Fallback Hotspot"
+    password: "qJ6EDZSFrP9R"
+
+captive_portal:
+
+web_server:
+  port: 80
+
+sensor:
+  # PULSE METERS ----------------------------------------------
+
+  - platform: pulse_meter
+    pin: 13
+    name: "Pulse Meter 1"
+    internal_filter: 100ms
+    timeout: 30s
+    filters:
+      - throttle: 10s
+    total:
+      name: "Usage Total 1"
+      id: water_meter_total_1
+      unit_of_measurement: "kWh"
+      accuracy_decimals: 3
+      device_class: water
+      state_class: total_increasing
+      filters:
+        - multiply: 0.002
+
+  - platform: pulse_meter
+    pin: 14
+    name: "Pulse Meter 2"
+    internal_filter: 100ms
+    timeout: 30s
+    filters:
+      - throttle: 10s
+    total:
+      name: "Usage Total 2"
+      id: water_meter_total_2
+      unit_of_measurement: "kWh"
+      accuracy_decimals: 3
+      device_class: water
+      state_class: total_increasing
+      filters:
+        - multiply: 0.002
+
+  - platform: pulse_meter
+    pin: 18
+    name: "Pulse Meter 3"
+    internal_filter: 100ms
+    timeout: 30s
+    filters:
+      - throttle: 10s
+    total:
+      name: "Usage Total 3"
+      id: water_meter_total_3
+      unit_of_measurement: "kWh"
+      accuracy_decimals: 3
+      device_class: water
+      state_class: total_increasing
+      filters:
+        - multiply: 0.001
+
+  - platform: pulse_meter
+    pin: 19
+    name: "Pulse Meter 4"
+    internal_filter: 100ms
+    timeout: 30s
+    filters:
+      - throttle: 10s
+    total:
+      name: "Usage Total 4"
+      id: water_meter_total_4
+      unit_of_measurement: "kWh"
+      accuracy_decimals: 3
+      device_class: water
+      state_class: total_increasing
+      filters:
+        - multiply: 0.001
+
+  - platform: pulse_meter
+    pin: 21
+    name: "Pulse Meter 5"
+    internal_filter: 100ms
+    timeout: 30s
+    filters:
+      - throttle: 10s
+    total:
+      name: "Usage Total 5"
+      id: water_meter_total_5
+      unit_of_measurement: "kWh"
+      accuracy_decimals: 3
+      device_class: water
+      state_class: total_increasing
+      filters:
+        - multiply: 0.001
+
+  - platform: pulse_meter
+    pin: 22
+    name: "Pulse Meter 6"
+    internal_filter: 100ms
+    timeout: 30s
+    filters:
+      - throttle: 10s
+    total:
+      name: "Usage Total 6"
+      id: water_meter_total_6
+      unit_of_measurement: "kWh"
+      accuracy_decimals: 3
+      device_class: water
+      state_class: total_increasing
+      filters:
+        - multiply: 0.001
+
+
+  # BATTERY ----------------------------------------------
+
+  - platform: adc
+    pin: 39
+    name: "Battery voltage"
+    id: battery_voltage
+    accuracy_decimals: 2
+    update_interval: 30s
+    attenuation: 11dB
+    filters:
+      - multiply: 2.0  # The voltage divider requires us to multiply by 2
+
+  # CT CLAMP 1 ----------------------------------------------
+
+  - platform: adc
+    pin: 32
+    attenuation: 11db
+    accuracy_decimals: 5
+    name: "Voltage Phase 1"
+    id: adc_sensor_phase_1
+    update_interval: 30s
+
+  - platform: ct_clamp
+    sensor: adc_sensor_phase_1
+    sample_duration: 200ms
+    name: "Measured current phase 1"
+    accuracy_decimals: 5
+    id: measured_current_phase_1     #Measured in ampere (I)
+    filters:
+    - calibrate_linear: # 30A
+      - 0.000 -> 0
+      - 0.15399 -> 4.75
+      - 0.25570 -> 7.71
+
+  - platform: template
+    id: my_power_phase_1
+    name: "Measured power phase 1"
+    accuracy_decimals: 3
+    lambda: "return id(measured_current_phase_1).state < 0 ? 0 : id(measured_current_phase_1).state * 230/1000;" #Power = V*I/1000. So change 230V to whatever your mains voltage is)
+    unit_of_measurement: 'kW'
+    update_interval: 30s        #You may change this value (in seconds)
+
+  - platform: total_daily_energy
+    name: "Total daily power usage phase 1"
+    power_id: my_power_phase_1
+
+  # CT CLAMP 2 ----------------------------------------------
+
+  - platform: adc
+    pin: 33
+    attenuation: 11db
+    accuracy_decimals: 5
+    name: "Voltage Phase 2"
+    id: adc_sensor_phase_2
+    update_interval: 30s
+
+  - platform: ct_clamp
+    sensor: adc_sensor_phase_2
+    sample_duration: 200ms
+    name: "Measured current phase 2"
+    accuracy_decimals: 5
+    id: measured_current_phase_2     #Measured in ampere (I)
+    filters:
+    - calibrate_linear: # 30A
+      - 0.000 -> 0
+      - 0.15399 -> 4.75
+      - 0.25570 -> 7.71
+
+  - platform: template
+    id: my_power_phase_2
+    name: "Measured power phase 2"
+    accuracy_decimals: 3
+    lambda: "return id(measured_current_phase_2).state < 0 ? 0 : id(measured_current_phase_2).state * 230/1000;" #Power = V*I/1000. So change 230V to whatever your mains voltage is)
+    unit_of_measurement: 'kW'
+    update_interval: 30s        #You may change this value (in seconds)
+
+  - platform: total_daily_energy
+    name: "Total daily power usage phase 2"
+    power_id: my_power_phase_2
+
+  # CT CLAMP 3 ----------------------------------------------
+
+  - platform: adc
+    pin: 34
+    attenuation: 11db
+    accuracy_decimals: 5
+    name: "Voltage Phase 3"
+    id: adc_sensor_phase_3
+    update_interval: 30s
+
+  - platform: ct_clamp
+    sensor: adc_sensor_phase_3
+    sample_duration: 200ms
+    name: "Measured current phase 3"
+    accuracy_decimals: 2
+    id: measured_current_phase_3     #Measured in ampere (I)
+    filters:
+    - calibrate_linear: # 30A
+      - 0.000 -> 0
+      - 0.15399 -> 4.75
+      - 0.25570 -> 7.71
+
+  - platform: template
+    id: my_power_phase_3
+    name: "Measured power phase 3"
+    accuracy_decimals: 2
+    lambda: "return id(measured_current_phase_3).state < 0 ? 0 : id(measured_current_phase_3).state * 230/1000;" #Power = V*I/1000. So change 230V to whatever your mains voltage is)
+    unit_of_measurement: 'kW'
+    update_interval: 30s        #You may change this value (in seconds)
+
+  - platform: total_daily_energy
+    name: "Total daily power usage phase 3"
+    power_id: my_power_phase_3
+    accuracy_decimals: 2
+
+  # CT CLAMP 4 (aircon) ----------------------------------------------
+
+  - platform: adc
+    pin: 35
+    attenuation: 11db
+    accuracy_decimals: 5
+    name: "Voltage device 1"
+    id: adc_sensor_aircon
+    update_interval: 30s
+
+  - platform: ct_clamp
+    sensor: adc_sensor_aircon
+    sample_duration: 200ms
+    name: "Measured current aircon"
+    accuracy_decimals: 2
+    update_interval: 30s
+    id: measured_current_aircon     #Measured in ampere (I)
+    filters:
+    - calibrate_linear: # 30A
+      - 0.01939 -> 0
+      - 0.155 -> 4.75
+      - 0.25570 -> 7.71
+
+  - platform: template
+    id: my_power_aircon
+    name: "Measured power aircon"
+    accuracy_decimals: 2
+    lambda: "return id(measured_current_aircon).state < 0 ? 0 : id(measured_current_aircon).state * 230;" #Power = V*I/1000. So change 230V to whatever your mains voltage is)
+    unit_of_measurement: 'W'
+    update_interval: 30s        #You may change this value (in seconds)
+
+  - platform: total_daily_energy
+    name: "Total daily power usage aircon"
+    power_id: my_power_aircon
+
+  # CT CLAMP 5 (cooktop) ----------------------------------------------
+
+  - platform: adc
+    pin: 36
+    attenuation: 12db
+    accuracy_decimals: 5
+    name: "Voltage cooktop"
+    id: adc_sensor_cooktop
+    update_interval: 30s
+
+  - platform: ct_clamp
+    sensor: adc_sensor_cooktop
+    sample_duration: 200ms
+    name: "Measured current cooktop"
+    accuracy_decimals: 2
+    update_interval: 30s
+    id: measured_current_cooktop     #Measured in ampere (I)
+    filters:
+    - calibrate_linear: # 30A
+      - 0.01 -> 0
+      - 0.15399 -> 4.75
+      - 0.25570 -> 7.71
+
+  - platform: template
+    id: my_power_cooktop
+    name: "Measured power cooktop"
+    accuracy_decimals: 2
+    lambda: "return id(measured_current_cooktop).state < 0 ? 0 : id(measured_current_cooktop).state * 230;" #Power = V*I/1000. So change 230V to whatever your mains voltage is)
+    unit_of_measurement: 'W'
+    update_interval: 30s        #You may change this value (in seconds)
+
+  - platform: total_daily_energy
+    name: "Total daily power usage cooktop"
+    power_id: my_power_cooktop
+    accuracy_decimals: 2
+
+
+time:
+  - platform: sntp
+    id: my_time

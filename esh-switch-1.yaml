@@ -1,0 +1,17 @@
+substitutions:
+  name: "esh-switch-1"
+  friendly_name: "esh-switch-1"
+packages:
+  athom.smart-plug-v2: github://athom-tech/athom-configs/athom-smart-plug-v2.yaml
+esphome:
+  name: ${name}
+  name_add_mac_suffix: false
+
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+api:
+  encryption:
+    key: "KFcTq38yH+RelHrAhnTtKjK8pqELqjKildpgQimIXFM="

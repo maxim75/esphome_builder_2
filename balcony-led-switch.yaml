@@ -1,0 +1,23 @@
+substitutions:
+  name: balcony-led-switch
+  friendly_name: balcony_led_switch
+packages:
+  athom.smart-plug-v2: github://athom-tech/athom-configs/athom-smart-plug-v2.yaml
+esphome:
+  name: ${name}
+  name_add_mac_suffix: false
+
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Balcony-Led-Switch"
+    password: "XIx5pMh0HHfn"
+
+
+api:
+  encryption:
+    key: "asaxgJyAYpi2rNp+/o0qh9uxvz9vooppPbytOEGx+tE="
+

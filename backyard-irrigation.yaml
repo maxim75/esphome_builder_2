@@ -1,0 +1,79 @@
+esphome:
+  name: backyard-irrigation
+  friendly_name: backyard-irrigation
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "WGUuHVhWf+OuNRW/JEZnfMSl7ONkgBmVnPPqQSR/mA8="
+
+ota:
+  - platform: esphome
+    password: "e3ba3efc86e9e4faf05f6f59c2583d32"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Backyard-Irrigation"
+    password: "VcQUVZGOTdnY"
+
+captive_portal:
+    
+status_led:
+  pin: 23
+
+web_server:
+  port: 80
+    
+
+switch:
+  - platform: gpio
+    name: "Upper terrace"
+    id: upper_terrace
+    pin: 13
+
+  - platform: gpio
+    name: "Right backyard"
+    id: right_backyard
+    pin: 12
+
+  - platform: gpio
+    name: "Left backyard"
+    id: left_backyard
+    pin: 14
+
+  - platform: gpio
+    name: "Relay 4"
+    id: upper_terrace_irrigation
+    pin: 27
+
+  - platform: gpio
+    name: "Relay 5"
+    id: terrace_hose
+    pin: 26
+
+  - platform: gpio
+    name: "Night light power"
+    id: night_light_power
+    pin: 25
+
+  - platform: gpio
+    name: "Relay 7"
+    id: relay_7
+    pin: 33
+
+  - platform: gpio
+    name: "Mulberry Lights"
+    id: mulberry_lights
+    pin: 32

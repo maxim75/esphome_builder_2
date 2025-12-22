@@ -1,0 +1,82 @@
+esphome:
+  name: tree3
+  friendly_name: tree3
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "2FGL6z9IV4kHbmnqKVS4a2dCznal7mEbl0kAgETN3F8="
+
+ota:
+  password: "28ef56e390904a11252564cf1d151480"
+  platform: esphome
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Tree3 Fallback Hotspot"
+    password: "uByD0Mth4GOn"
+
+captive_portal:
+
+# Specify the two pins of the h-bridge as PWM pins
+output:
+  - platform: ledc
+    id: pina
+    pin: GPIO15
+    frequency: 2000 Hz
+  - platform: ledc
+    id: pinb
+    pin: GPIO21
+    frequency: 2000 Hz
+  - platform: gpio
+    pin: 33
+    id: power_1
+  - platform: ledc
+    id: pinc
+    pin: GPIO13
+    frequency: 2000 Hz
+  - platform: ledc
+    id: pind
+    pin: GPIO26
+    frequency: 2000 Hz
+  - platform: gpio
+    pin: 25
+    id: power_2
+
+# Create a light using the hbridge
+light:
+  - platform: hbridge
+    id: mainlight_1
+    name: "Hbridge Lights 1"
+    pin_a: pina
+    pin_b: pinb
+
+  - platform: hbridge
+    id: mainlight_2
+    name: "Hbridge Lights 2"
+    pin_a: pinc
+    pin_b: pind
+
+  - platform: binary
+    output: power_1
+    name: "Power 1"
+
+  - platform: binary
+    output: power_2
+    name: "Power 2"
+
+
+
+    

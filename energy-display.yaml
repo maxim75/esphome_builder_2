@@ -1,0 +1,72 @@
+esphome:
+  name: energy-display
+  friendly_name: energy-display
+
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "M3SHrTzfQtB0TkZ+l3AdQ4iB+Gvz88ZIqKY4gzOy7Go="
+
+ota:
+  - platform: esphome
+    password: "047805bd9065d73b1ad9aa6c717a5533"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  min_auth_mode: WPA2
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Energy-Display Fallback Hotspot"
+    password: "0Xqz6oMe0Zjr"
+
+captive_portal:
+    
+web_server:
+  port: 80
+
+time:
+  - platform: homeassistant
+    id: hass_time
+
+sensor:
+  - platform: homeassistant
+    id: surplus_energy
+    entity_id: sensor.surplus_energy
+    name: "Surplus Energy"
+
+  - platform: homeassistant
+    name: "display intensity"
+    id: "energy_meter_display_intensity"
+    entity_id: input_number.energy_meter_display_intensity
+    filters:
+      - calibrate_linear:
+          - 0.00 -> 0
+          - 15.00 -> 15
+
+font:
+  - file: "pixelmix.ttf"
+    id: digit_font
+    size: 8
+
+spi:
+  clk_pin: 1
+  mosi_pin: 3
+
+display:
+  - platform: max7219digit
+    cs_pin: 2
+    num_chips: 4
+    #intensity: 0
+    lambda: |-
+      it.intensity(id(energy_meter_display_intensity).state);
+      it.printf(0, 0, id(digit_font), "%.0f", TextAlign::TOP_CENTER, id(surplus_energy).state);
