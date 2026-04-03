@@ -4,6 +4,10 @@ esphome:
   on_boot:
     priority: -100.0 # Optional: Adjust priority if needed. Default runs after everything is set up.
     then:
+      - light.turn_on:
+          id: display_backlight
+          brightness: 50%
+
       # Example 1: Using a logger action within the on_boot trigger
       - logger.log: "ESPHome device has started!"
 
@@ -116,6 +120,103 @@ sensor:
               sprintf(buffer, "%.1f°C", x);
               return buffer;
 
+  - platform: homeassistant
+    id: bus_sensor
+    entity_id: sensor.bus
+    internal: true
+    on_value:
+      then:
+        - lvgl.label.update:
+            id: widget_bus
+            text: !lambda |-
+              char buffer[16];
+              sprintf(buffer, "%.0f min", x);
+              return std::string(buffer);
+
+  - platform: homeassistant
+    id: bus_delay
+    entity_id: sensor.bus
+    attribute: delay
+    internal: true
+    on_value:
+      then:
+        - lvgl.label.update:
+            id: widget_bus_delay
+            text: !lambda |-
+              char buffer[16];
+              sprintf(buffer, "%.0f min", x);
+              return std::string(buffer);
+
+  # - platform: homeassistant
+  #   id: bus_real_time
+  #   entity_id: sensor.bus
+  #   attribute: real_time
+  #   internal: true
+  #   on_value:
+  #     then:
+  #       - lvgl.label.update:
+  #           id: widget_bus_real_time
+  #           text: !lambda |-
+  #             char buffer[16];
+  #             sprintf(buffer, "= %.0f", x);
+  #             return std::string(buffer);
+
+text_sensor:
+  - platform: homeassistant
+    id: bus_real_time_text
+    entity_id: sensor.bus
+    attribute: real_time  
+    internal: true
+    on_value:
+      then:
+        - lvgl.label.update:
+            id: widget_bus_real_time
+            text: !lambda |-
+              return std::string(id(bus_real_time_text).state == "y" ? "Yes" : "No");
+
+# text_sensor:
+#   - platform: homeassistant
+#     id: date_time_iso
+#     entity_id: sensor.date_time_iso
+#     internal: true 
+#     on_value:
+#       then:
+#         - lvgl.label.update: 
+#             id: widget_date_time_iso 
+#             text: !lambda |-
+#                 std::string state = id(date_time_iso).state;
+#                 size_t t_pos = state.find('T');
+#                 if (t_pos != std::string::npos) {
+#                   return state.substr(t_pos + 1);
+#                 }
+#                 return std::string("--:--:--");
+
+
+font:
+  - file: "gfonts://Roboto"
+    id: roboto_32
+    size: 32
+    bpp: 4
+
+  - file: "gfonts://Roboto@600"
+    id: roboto_bold_48
+    size: 48
+    bpp: 4
+
+  - file: "gfonts://Roboto+Mono@700"  # bold weight
+    id: roboto_mono_bold_48
+    size: 48
+    bpp: 4
+
+  - file: "https://github.com/Templarian/MaterialDesign-Webfont/raw/master/fonts/materialdesignicons-webfont.ttf"
+    id: mdi_icons_40
+    size: 40
+    bpp: 4
+    glyphs:
+      - "\U000F050E"  # mdi:thermometer
+      - "\U000F0150"  # mdi:clock-outline
+      - "\U000F000B"  # mdi:bus
+
 display:
   - platform: st7701s
     id: tft_display
@@ -159,6 +260,21 @@ touchscreen:
 #      swap_xy: true
 #      mirror_x: true
 
+time:
+  - platform: sntp
+    id: sntp_time
+    timezone: "Australia/Sydney"  # Change to your timezone
+    on_time:
+      - seconds: /1  # Every second
+        then:
+          - lvgl.label.update:
+              id: widget_date_time_iso
+              text: !lambda |-
+                char buffer[9];
+                auto now = id(sntp_time).now();
+                sprintf(buffer, "%02d:%02d:%02d", now.hour, now.minute, now.second);
+                return std::string(buffer);
+
 lvgl:
   pages:
     - id: main_page
@@ -176,27 +292,124 @@ lvgl:
                 row: 0
                 column: 0
                 widgets:
+                  # --- Thermometer icon + outdoor temp ---
                   - label:
-                      id: widget_outdoor_temperature
+                      id: icon_thermometer_outdoor
                       x: 0
                       y: 0
-                      width: 240
+                      width: 44
+                      height: 50
+                      text: "\U000F050E"
+                      text_font: mdi_icons_40
+                      text_color: 0xECD504
+                      text_align: CENTER
+
+                  - label:
+                      id: widget_outdoor_temperature
+                      x: 44                          # shifted right to make room for icon
+                      y: 0
+                      width: 196
                       height: 40
-                      text: "Tile 1"
+                      text: "--.-°C"
                       text_font: montserrat_48
                       text_color: 0xECD504
                       text_opa: 100%
                       text_align: CENTER
 
+                  # --- Thermometer icon + office temp ---
                   - label:
-                      id: widget_office_temperature
+                      id: icon_thermometer_office
                       x: 240
                       y: 0
-                      width: 200
+                      width: 44
+                      height: 50
+                      text: "\U000F050E"
+                      text_font: mdi_icons_40
+                      text_color: 0x60A5FA           # different colour to distinguish indoor
+                      text_align: CENTER
+
+                  - label:
+                      id: widget_office_temperature
+                      x: 284                         # shifted right to make room for icon
+                      y: 0
+                      width: 160
                       height: 40
-                      text: "Tile 1"
+                      text: "--.-°C"
+                      text_font: montserrat_48
+                      text_color: 0x60A5FA
+                      text_opa: 100%
+                      text_align: CENTER
+
+                  # --- Clock icon + time ---
+                  - label:
+                      id: icon_clock
+                      x: 0
+                      y: 50
+                      width: 44
+                      height: 50
+                      text: "\U000F0150"
+                      text_font: mdi_icons_40
+                      text_color: 0xECD504
+                      text_align: CENTER
+
+                  - label:
+                      id: widget_date_time_iso
+                      x: 48                          # shifted right to make room for icon
+                      y: 50
+                      width: 260
+                      height: 40
+                      text: "--:--:--"
+                      text_font: roboto_bold_48
+                      text_color: 0xECD504
+                      text_opa: 100%
+                      text_align: LEFT
+
+                  # --- Bus icon + bus time ---
+                  - label:
+                      id: icon_bus
+                      x: 0
+                      y: 100
+                      width: 44
+                      height: 50
+                      text: "\U000F000B"
+                      text_font: mdi_icons_40
+                      text_color: 0xECD504
+                      text_align: CENTER
+
+                  - label:
+                      id: widget_bus
+                      x: 48                          # shifted right to make room for icon
+                      y: 100
+                      width: 150
+                      height: 40
+                      text: "-- min"
                       text_font: montserrat_48
                       text_color: 0xECD504
+                      text_opa: 100%
+                      text_align: LEFT
+
+                  # --- Remaining widgets unchanged ---
+                  - label:
+                      id: widget_bus_delay
+                      x: 200
+                      y: 100
+                      width: 240
+                      height: 30
+                      text: "Delay: --"
+                      text_font: montserrat_24
+                      text_color: 0xFF4444
+                      text_opa: 100%
+                      text_align: LEFT
+
+                  - label:
+                      id: widget_bus_real_time
+                      x: 0
+                      y: 160
+                      width: 240
+                      height: 30
+                      text: "--:--"
+                      text_font: montserrat_24
+                      text_color: 0xAAAAAA
                       text_opa: 100%
                       text_align: CENTER
 
@@ -209,15 +422,17 @@ lvgl:
                       bg_color: 0x4F46E5
                       on_click:
                         then:
-                        - logger.log: "Click!"
-                        - homeassistant.action:
-                            service: light.toggle # Service to call
-                            data:
-                              entity_id: light.table_shelf_office_shelf
+                          - logger.log: "Click!"
+                          - homeassistant.action:
+                              service: light.toggle
+                              data:
+                                entity_id: light.table_shelf_office_shelf
                       widgets:
                         - label:
                             text: "Button"
                             text_color: 0xFFFFFF
+
+
               - id: tile_1_0
                 row: 1
                 column: 0

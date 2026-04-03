@@ -1,0 +1,53 @@
+esphome:
+  name: current-meter-1
+  friendly_name: current-meter-1
+
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "FV+e8z9wiqV7oFR7a22PES9bawCloVErJhmgbZQyZSQ="
+
+ota:
+  - platform: esphome
+    password: "5adf25a8d648691c3c55c356a0de7e80"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Current-Meter-1 Fallback Hotspot"
+    password: "GadWfliq4J5G"
+
+captive_portal:
+  
+# 1. Define the I2C bus (standard pins for ESP32/ESP8266)
+i2c:
+  sda: GPIO4  # Adjust to your board's SDA pin (e.g., D2 on NodeMCU)
+  scl: GPIO5  # Adjust to your board's SCL pin (e.g., D1 on NodeMCU)
+  scan: true
+
+font:
+  - file: "gfonts://VT323"
+    id: vga_font
+    size: 24  # VT323 needs a larger size to look crisp on 32px height
+    
+
+# 3. Configure the SSD1306 display
+display:
+  - platform: ssd1306_i2c
+    model: "SSD1306 128x32"
+    address: 0x3C            # Standard I2C address for these modules
+    lambda: |-
+      // it.print(x, y, vga_font, "text");
+      it.print(0, 0, id(vga_font), "Hello ESPHome!");
+      it.printf(0, 16, id(vga_font), "128x32 OLED");
